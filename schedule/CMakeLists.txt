@@ -5,7 +5,7 @@ project(schedule)
 set(CMAKE_CXX_STANDARD 11)
 
 # Add the executable
-add_executable(schedule source/main.cpp source/schedule.cpp)
+add_executable(schedule source/main.cpp source/schedule.cpp source/algorithm1.cpp source/algorithm2.cpp)
 
 # Include cxxopts header
 include_directories(${CMAKE_SOURCE_DIR}/include)
