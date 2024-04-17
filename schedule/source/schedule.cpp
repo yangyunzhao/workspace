@@ -96,3 +96,14 @@ Options parseArguments(int argc, char* argv[]) {
         exit(1);
     }
 }
+
+void exec_task(int load) {
+    auto start = std::chrono::high_resolution_clock::now();
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::milliseconds elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    while (elapsed_milliseconds.count() < load) {
+        for (int i = 0; i < 1000; i++) {}  // Busy loop to simulate load
+        end = std::chrono::high_resolution_clock::now();
+        elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    }
+}

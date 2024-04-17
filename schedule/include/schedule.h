@@ -30,4 +30,6 @@ void generateRandom(const Options& options, std::vector<int>& taskQueue);
 
 Options parseArguments(int argc, char* argv[]);
 
-#define EXEC_TASK(task) std::this_thread::sleep_for(std::chrono::milliseconds(task))
+void worker_fetch(int threadId, Options* options);
+void worker_steal(int threadId, Options* options);
+void exec_task(int load);
