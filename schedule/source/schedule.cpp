@@ -1,23 +1,26 @@
 #include "schedule.h"
 
-void generateRandom(const Options& options, std::vector<int>& taskQueue) {
+void generateRandom(Options* options, std::vector<int>& taskQueue, std::list<int>& taskList) {
+    taskQueue.resize(options->taskCount);
     std::random_device rd;
     std::mt19937 gen(rd());
     
-    if (options.randomType == 1) {
-        std::uniform_int_distribution<int> uniform(options.min, options.max);
-        for (int i = 0; i < options.taskCount; ++i) {
-            taskQueue.push_back(uniform(gen));
+    if (options->randomType == UNIFORM) {
+        std::uniform_int_distribution<int> uniform(options->min, options->max);
+        for (int i = 0; i < options->taskCount; ++i) {
+            taskQueue[i] = uniform(gen);
+            taskList.push_back(taskQueue[i]);
         }
-    } else if (options.randomType == 2) {
-        std::normal_distribution<double> normal(options.mean, options.stddev);
-        for (int i = 0; i < options.taskCount; ++i) {
-            taskQueue.push_back(std::max(0, (int)normal(gen)));
+    } else if (options->randomType == NORMAL) {
+        std::normal_distribution<double> normal(options->mean, options->stddev);
+        for (int i = 0; i < options->taskCount; ++i) {
+            taskQueue[i] = std::max(0, (int)normal(gen));
+            taskList.push_back(taskQueue[i]);
         }
     }
 }
 
-Options parseArguments(int argc, char* argv[]) {
+Options* parseArguments(int argc, char* argv[]) {
     try {
         cxxopts::Options options("TaskScheduler", "A sample task scheduler program");
 
@@ -44,7 +47,7 @@ Options parseArguments(int argc, char* argv[]) {
             exit(0);
         }
 
-        Options opts;
+        static Options opts;
         opts.algorithm = result["algorithm"].as<int>();
         opts.randomType = result["randomType"].as<int>();
         if (opts.algorithm != 1 && opts.algorithm != 2) {
@@ -85,7 +88,7 @@ Options parseArguments(int argc, char* argv[]) {
         opts.threadCount = result["threadCount"].as<int>();
         opts.protectType = result["protectType"].as<int>();
 
-        return opts;
+        return &opts;
     }
     catch (const cxxopts::exceptions::exception& e) {
         std::cerr << "Error parsing options: " << e.what() << std::endl;
@@ -95,11 +98,12 @@ Options parseArguments(int argc, char* argv[]) {
         std::cerr << "Validation error: " << e.what() << std::endl;
         exit(1);
     }
+    return nullptr;
 }
 
 void exec_task(int load) {
     auto start = std::chrono::high_resolution_clock::now();
-    auto end = std::chrono::high_resolution_clock::now();
+    auto end = start;
     std::chrono::milliseconds elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     while (elapsed_milliseconds.count() < load) {
         for (int i = 0; i < 1000; i++) {}  // Busy loop to simulate load
@@ -107,3 +111,13 @@ void exec_task(int load) {
         elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     }
 }
+
+// for fetch
+std::vector<int> taskQueue;
+std::atomic<uint64_t> taskIndex;
+std::mutex taskMut;
+int64_t taskidx = 0;
+
+// for steal
+std::list<int> taskList;
+std::vector<TaskQueue> queues;

@@ -1,66 +1,5 @@
 #include "schedule.h"
 
-std::vector<int> taskQueue;
-std::atomic<uint64_t> taskIndex;
-std::mutex taskMut;
-int64_t taskidx = 0;
-
-void worker_fetch(int threadId, int initialCount, int subsequentCount, int protectType) {
-    for (int i = 0; i < initialCount; ++ i) {
-        EXEC_TASK(taskQueue[threadId * initialCount + i]);
-    }
-
-    int count = 0;
-    if (protectType == 1) {
-        while (true) {
-            do {
-
-            } while (false);
-            uint64_t currentIndex = taskidx;
-            uint32_t start = currentIndex & 0xFFFFFFFF;
-            uint32_t tasksToFetch = (count == 0) ? initialCount : subsequentCount;
-            uint64_t newIndex = ((currentIndex >> 32) + tasksToFetch) << 32 | (start + tasksToFetch);
-
-            if (start >= taskQueue.size()) {
-                break;
-            }
-
-            // 尝试原子地更新任务索引
-            if (taskIndex.compare_exchange_strong(currentIndex, newIndex)) {
-                // 计算实际需要执行的任务数，考虑边界条件
-                int tasksExecuted = (int)std::min((size_t)tasksToFetch, taskQueue.size() - start);
-                for (int i = 0; i < tasksExecuted; ++i) {
-                    // 模拟任务执行时间
-                    std::this_thread::sleep_for(std::chrono::milliseconds(taskQueue[start + i]));
-                }
-            }
-            count++;
-        }
-    }
-    else if (protectType == 2) {
-        while (true) {
-            uint64_t currentIndex = taskIndex.load();
-            uint32_t start = currentIndex & 0xFFFFFFFF;
-            uint32_t tasksToFetch = (count == 0) ? initialCount : subsequentCount;
-            uint64_t newIndex = ((currentIndex >> 32) + tasksToFetch) << 32 | (start + tasksToFetch);
-
-            if (start >= taskQueue.size()) {
-                break;
-            }
-
-            // 尝试原子地更新任务索引
-            if (taskIndex.compare_exchange_strong(currentIndex, newIndex)) {
-                // 计算实际需要执行的任务数，考虑边界条件
-                int tasksExecuted = (int)std::min((size_t)tasksToFetch, taskQueue.size() - start);
-                for (int i = 0; i < tasksExecuted; ++i) {
-                    // 模拟任务执行时间
-                    std::this_thread::sleep_for(std::chrono::milliseconds(taskQueue[start + i]));
-                }
-            }
-            count++;
-        }
-    }
-}
 #if 0
 struct TaskQueue {
     std::vector<int> tasks;
@@ -111,24 +50,25 @@ void worker_steal(int threadId, int threadCount, int numTasksToSteal, int taskPr
 }
 #endif 
 int main(int argc, char* argv[]) {
-    const auto& options = parseArguments(argc, argv);
+    auto options = parseArguments(argc, argv);
     
     // 初始化任务队列
-    taskQueue.resize(options.taskCount);
-    generateRandom(options, taskQueue);
+    generateRandom(options, taskQueue, taskList);
 
     // 线程集合
     std::vector<std::thread> threads;
     auto startTime = std::chrono::high_resolution_clock::now();
 
     // 启动线程
-    if (options.algorithm == 1) {
-        for (int i = 0; i < options.threadCount; ++i) {
-            threads.push_back(std::thread(worker_fetch, i, options.initialCount, options.subsequentCount, options.protectType));
+    if (options->algorithm == FETCH) {
+        taskIndex = options->threadCount * options->initialCount;
+        taskidx = options->threadCount * options->initialCount;
+        for (int i = 0; i < options->threadCount; ++i) {
+            threads.push_back(std::thread(worker_fetch, i, options));
         }
-    } else if (options.algorithm == 2) {
-        for (int i = 0; i < options.threadCount; ++i) {
-            //threads.push_back(std::thread(worker_steal, i, options.threadCount, options.numTasksToSteal, options.taskProtection));
+    } else if (options->algorithm == STEAL) {
+        for (int i = 0; i < options->threadCount; ++i) {
+            threads.push_back(std::thread(worker_steal, i, options));
         }
     }
 
