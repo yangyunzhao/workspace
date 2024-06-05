@@ -53,21 +53,10 @@ struct transform
     }
     void work()
     {
-        int sum = 0;
+        vec.reserve(tree.size());
         for (auto it = tree.rbegin(); it != tree.rend(); ++it)
         {
-            Node *e = it->second;
-            auto &Head = threadARHead[sum % threadCnt_];
-            if (Head.head == nullptr)
-            {
-                Head.head = e;
-            }
-            else
-            {
-                Head.tail->next = e;
-            }
-            Head.tail = e;
-            ++sum;
+            vec.push_back(it->second);
         }
     }
     void reset()
@@ -82,6 +71,7 @@ struct transform
     int threadCnt_;
     map<int, Node *> tree;
     std::vector<List> threadARHead;
+    std::vector<Node *> vec;
 };
 
 int main(int argc, char **argv)
@@ -99,12 +89,12 @@ int main(int argc, char **argv)
     transform tran(stoi(argv[1]), stoi(argv[2]));
     for (int i = 0; i < repeat; ++i)
     {
-
         {
             util_time calc("transfer");
             tran.work();
+            //tran.reset();
         }
-        tran.reset();
+        
     }
     printf("repeat:%d node-count:%d thread-cnt:%d avg:%f\n", repeat, stoi(argv[1]), stoi(argv[2]), cost / (repeat + 0.0));
     return 0;
