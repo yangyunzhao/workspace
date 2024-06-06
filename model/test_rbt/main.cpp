@@ -5,7 +5,11 @@
 #include <cstdio>
 
 using namespace std;
+#ifdef USE_CLOCK
+double cost = 0.0;
+#else
 uint64_t cost = 0ULL;
+#endif
 
 template <typename T = chrono::microseconds>
 struct util_time
@@ -20,6 +24,13 @@ struct util_time
     const char *pre_;
     chrono::time_point<chrono::high_resolution_clock> start_;
 };
+
+inline double gettime()
+{
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    return now.tv_sec * 1000 * 1000 + now.tv_nsec * 1.0e-3;
+}
 
 struct Node
 {
@@ -76,26 +87,32 @@ struct transform
 
 int main(int argc, char **argv)
 {
-    if (argc < 3)
+    if (argc < 2)
     {
-        cout << "usage:" << argv[0] << " 10000 4\n";
+        cout << "usage:" << argv[0] << " 10000 200\n";
         exit(1);
     }
     int repeat = 100;
     if (argc >= 4)
     {
-        repeat = stoi(argv[3]);
+        repeat = stoi(argv[2]);
     }
-    transform tran(stoi(argv[1]), stoi(argv[2]));
+    transform tran(stoi(argv[1]), 2);
     for (int i = 0; i < repeat; ++i)
     {
+#if defined USE_CLOCK
+        double t1 = gettime();
+        tran.work();
+        double t2 = gettime();
+        cost += t2 - t1;
+#else
         {
             util_time calc("transfer");
             tran.work();
-            //tran.reset();
+            // tran.reset();
         }
-        
+#endif
     }
-    printf("repeat:%d node-count:%d thread-cnt:%d avg:%f\n", repeat, stoi(argv[1]), stoi(argv[2]), cost / (repeat + 0.0));
+    printf("repeat:%d node-count:%d avg:%f\n", repeat, stoi(argv[1]), cost / (repeat + 0.0));
     return 0;
 }
