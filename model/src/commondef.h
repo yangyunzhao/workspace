@@ -1,5 +1,5 @@
 #pragma once
 
 namespace core{
-    const int REGION_SIZE = 61;
+    const int REGION_SIZE = 6;
 }

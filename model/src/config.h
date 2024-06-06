@@ -1,11 +1,17 @@
 #pragma once
-namespace core{
+namespace core
+{
 
-    class Config{
-        private:
-            int thread;
-            int arlimit;
-        public:
+    class Config
+    {
+    private:
+        int thread;
+        int arlimit;
 
+    public:
+    };
+    struct UserCfg
+    {
+        int ARcnt;
     };
 };

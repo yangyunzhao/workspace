@@ -5,9 +5,12 @@
 using namespace std;
 using namespace core;
 
-
 int main()
 {
-    Process simu;
+    UserCfg cfg;
+    cfg.ARcnt = 10;
+    Process simu(cfg);
+    simu.prepare();
+    simu.run_until(5);
     return 0;
 }
