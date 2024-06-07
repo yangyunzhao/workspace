@@ -1,7 +1,6 @@
 #pragma once
 namespace core
 {
-
     class Config
     {
     private:

@@ -9,7 +9,26 @@ namespace core
         printf("arg:%d\n", arg);
         return nullptr;
     }
-    Process::Process(UserCfg &oCfg) : cfg(oCfg) {}
+    Process::Process(UserCfg &oCfg) : cfg(oCfg), tsPool(nullptr) {}
+    Process::~Process()
+    {
+        while (tsPool)
+        {
+            for (int rid = 0; rid < REGION_SIZE; ++rid)
+            {
+                TaskAR *ar = tsPool->region[rid].head;
+                while (ar)
+                {
+                    TaskAR *bakeup = ar;
+                    ar = ar->next;
+                    free(bakeup);
+                }
+            }
+            TimeStep *backup = tsPool;
+            tsPool = tsPool->next;
+            free(backup);
+        }
+    }
     void Process::prepare()
     {
         int ARcnt = cfg.ARcnt;
@@ -70,7 +89,14 @@ namespace core
         while (TimeQ.head && TimeQ.head->curTime < end)
         {
             run_timestep();
+            TimeStep *ts = TimeQ.head;
             TimeQ.head = TimeQ.head->next;
+            free_ts(ts);
         }
+    }
+    void Process::free_ts(TimeStep *ts)
+    {
+        ts->next = tsPool;
+        tsPool = ts;
     }
 }

@@ -15,6 +15,7 @@ file(GLOB SRC "${CMAKE_SOURCE_DIR}/src/*.cpp")
 add_executable(model ${SRC})
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/third/json)
+include_directories(${CMAKE_SOURCE_DIR}/util)
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 add_subdirectory(test_rbt)
 

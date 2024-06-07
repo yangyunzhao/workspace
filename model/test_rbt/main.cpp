@@ -3,34 +3,30 @@
 #include <map>
 #include <chrono>
 #include <cstdio>
+#include "util.h"
 
 using namespace std;
+
 #ifdef USE_CLOCK
 double cost = 0.0;
 #else
 uint64_t cost = 0ULL;
 #endif
 
-template <typename T = chrono::microseconds>
+template <typename T = chrono::microseconds, bool log = false>
 struct util_time
 {
     util_time(const char *prefix) : pre_(prefix), start_(chrono::high_resolution_clock::now()) {}
     ~util_time()
     {
-        // cout << "<" << pre_ << "> " << chrono::duration_cast<T_>(chrono::high_resolution_clock::now() - start_).count() << "\n";
+        if (log)
+            cout << "<" << pre_ << "> " << chrono::duration_cast<T_>(chrono::high_resolution_clock::now() - start_).count() << "\n";
         cost += chrono::duration_cast<T_>(chrono::high_resolution_clock::now() - start_).count();
     }
     using T_ = T;
     const char *pre_;
     chrono::time_point<chrono::high_resolution_clock> start_;
 };
-
-inline double gettime()
-{
-    struct timespec now;
-    clock_gettime(CLOCK_MONOTONIC, &now);
-    return now.tv_sec * 1000 * 1000 + now.tv_nsec * 1.0e-3;
-}
 
 struct Node
 {
@@ -61,6 +57,13 @@ struct transform
             tree[i] = Node::create();
         }
         threadARHead.resize(threadCnt);
+    }
+    ~transform()
+    {
+        for (auto &e : tree)
+        {
+            free(e.second);
+        }
     }
     void work()
     {

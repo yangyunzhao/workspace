@@ -8,11 +8,15 @@ namespace core
     {
     public:
         Process(UserCfg &oCfg);
+        ~Process();
         void prepare();
         void run_until(int end);
         void run_timestep();
         void run_region(int regionId);
+        void free_ts(TimeStep* ts);
+    private:
         UserCfg &cfg;
         TQSummary TimeQ;
+        TimeStep *tsPool;
     };
 }
