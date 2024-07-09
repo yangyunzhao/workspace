@@ -16,11 +16,16 @@ This plugin allows you to export all due cards and new cards scheduled for today
 
 With this plugin, you can uniformly adjust the due date of all learned cards in a specific deck, pushing them back by one day. This is particularly useful when you've fallen behind schedule, preventing an unreasonable accumulation of cards on the following day.
 
+### Plugin 3: Import Words from Eudic
+
+Import words from Eudic (a popular Chinese dictionary app) into Anki for efficient memorization. The plugin supports importing words from XML files exported by Eudic and includes a progress bar to visualize the import process.
+
 ## 中文
 
 这个代码仓库包含了我为Anki开发的一系列插件。
 
 Anki是一款强大而智能的闪卡程序,让记忆变得简单。它使用间隔重复技术来帮助您更高效地学习,并长期保持记忆。
+
 
 ### 插件1: 导出到期和新卡片
 
@@ -29,6 +34,10 @@ Anki是一款强大而智能的闪卡程序,让记忆变得简单。它使用间
 ### 插件2: 推迟到期卡片
 
 使用这个插件,您可以统一调整特定牌组中所有已学习卡片的到期日,将它们统一往后推迟一天。当您因某些原因落后进度时,这个功能特别有用,可以避免第二天出现不合理的卡片堆积。
+
+### 插件3: 从欧路词典导入单词
+
+从欧路词典（一款流行的中文词典应用）导入单词到 Anki，以便高效记忆。插件支持导入欧路词典导出的 XML 文件，并包含进度条以可视化导入过程。
 
 ---
 
